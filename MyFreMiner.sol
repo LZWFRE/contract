@@ -977,7 +977,7 @@ contract FreMiner is ReentrancyGuard {
         return true;
     }
 
-    // 计算质押算力
+    // 计算质押算力 （lpscale为所需liz的占比份额）
     function getPower(
         address tokenAddress,
         uint256 amount,
