@@ -114,6 +114,12 @@ contract FreMiner is ReentrancyGuard {
     }
  
     // 初始化合约
+    // #	Name	            Type	Data
+    // 0	lizToken	        address	fcb520b47f5601031e0eb316f553a3641ff4b13c
+    // 1	liztrade	        address	52c400e56c15de371fe9fd610b2d9235ac8489c9
+    // 2	wrappedbnbaddress	address	bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c
+    // 3	bnbtradeaddress	    address	16b9a82891338f9ba80e2d6970fdda79d1eb0dae
+    // 4	usdtaddress	        address	55d398326f99059ff775485246999027b3197955
     function InitalContract(
         address freToken,
         address fretrade,
@@ -341,6 +347,118 @@ contract FreMiner is ReentrancyGuard {
         return true;
     }
 
+    
+    //BSC-USD
+    // #	Name	Type	Data
+    // 0	tokenAddress	address	55d398326f99059ff775485246999027b3197955
+    // 1	tradecontract	address	16b9a82891338f9ba80e2d6970fdda79d1eb0dae
+    // 2	rate	        uint256	100
+    // 3	pctmin	        uint256	50
+    // 4	pctmax	        uint256	80
+
+    //LIZ
+    // #	Name	Type	Data
+    // 0	tokenAddress	address	fcb520b47f5601031e0eb316f553a3641ff4b13c
+    // 1	tradecontract	address	52c400e56c15de371fe9fd610b2d9235ac8489c9
+    // 2	rate	        uint256	100
+    // 3	pctmin	        uint256	10
+    // 4	pctmax	        uint256	100
+
+    //BNB
+    // #	Name	Type	Data
+    // 0	tokenAddress	address	0000000000000000000000000000000000000002
+    // 1	tradecontract	address	16b9a82891338f9ba80e2d6970fdda79d1eb0dae
+    // 2	rate	        uint256	100
+    // 3	pctmin	        uint256	50
+    // 4	pctmax	        uint256	80
+
+    //BTCB 
+    // #	Name	Type	Data
+    // 0	tokenAddress	address	7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c
+    // 1	tradecontract	address	61eb789d75a95caa3ff50ed7e47b96c132fec082
+    // 2	rate	        uint256	100
+    // 3	pctmin	        uint256	50
+    // 4	pctmax	        uint256	80
+
+    //ETH
+    // #	Name	Type	Data
+    // 0	tokenAddress	address	2170ed0880ac9a755fd29b2688956bd959f933f8
+    // 1	tradecontract	address	74e4716e431f45807dcf19f284c7aa99f18a4fbc
+    // 2	rate	        uint256	100
+    // 3	pctmin	        uint256	50
+    // 4	pctmax	        uint256	80
+
+    //ADA
+    // #	Name	Type	Data
+    // 0	tokenAddress	address	3ee2200efb3400fabb9aacf31297cbdd1d435d47
+    // 1	tradecontract	address	28415ff2c35b65b9e5c7de82126b4015ab9d031f
+    // 2	rate	        uint256	100
+    // 3	pctmin	        uint256	50
+    // 4	pctmax	        uint256	80
+
+    //FIL
+    // #	Name	Type	Data
+    // 0	tokenAddress	address	0d8ce2a99bb6e3b7db580ed848240e4a0f9ae153
+    // 1	tradecontract	address	d9bccbbbdfd9d67beb5d2273102ce0762421d1e3
+    // 2	rate	        uint256	100
+    // 3	pctmin	        uint256	50
+    // 4	pctmax	        uint256	80
+
+    //DOT
+    // #	Name	Type	Data
+    // 0	tokenAddress	address	7083609fce4d1d8dc0c979aab8c869ea2c873402
+    // 1	tradecontract	address	dd5bad8f8b360d76d12fda230f8baf42fe0022cf
+    // 2	rate	        uint256	100
+    // 3	pctmin	        uint256	50
+    // 4	pctmax	        uint256	80
+
+    //LTC
+    // #	Name	Type	Data
+    // 0	tokenAddress	address	4338665cbb7b2485a8855a139b75d5e34ab0db94
+    // 1	tradecontract	address	71b01ebddd797c8e9e0b003ea2f4fd207fbf46cc
+    // 2	rate	        uint256	100
+    // 3	pctmin	        uint256	50
+    // 4	pctmax	        uint256	80
+
+    //BCH
+    // #	Name	Type	Data
+    // 0	tokenAddress	address	8ff795a6f4d97e7887c79bea79aba5cc76444adf
+    // 1	tradecontract	address	54edd846db17f43b6e43296134ecd96284671e81
+    // 2	rate	        uint256	100
+    // 3	pctmin	        uint256	50
+    // 4	pctmax	        uint256	80
+
+    //EOS
+    // #	Name	Type	Data
+    // 0	tokenAddress	address	56b6fb708fc5732dec1afc8d8556423a2edccbd6
+    // 1	tradecontract	address	b6e34b5c65eda51bb1bd4ea5f79d385fb94b9504
+    // 2	rate	        uint256	100
+    // 3	pctmin	        uint256	50
+    // 4	pctmax	        uint256	80
+
+    //LINK    
+    // #	Name	Type	Data
+    // 0	tokenAddress	address	f8a0bf9cf54bb92f17374d9e9a321e6a111a51bd
+    // 1	tradecontract	address	824eb9fadfb377394430d2744fa7c42916de3ece
+    // 2	rate	        uint256	100
+    // 3	pctmin      	uint256	50
+    // 4	pctmax      	uint256	80
+
+    //XRP
+    // #	Name	Type	Data
+    // 0	tokenAddress	address	1d2f0da169ceb9fc7b3144628db156f3f6c60dbe
+    // 1	tradecontract	address	03f18135c44c64ebfdcbad8297fe5bdafdbbdd86
+    // 2	rate	        uint256	100
+    // 3	pctmin	        uint256	50
+    // 4	pctmax	        uint256	80
+
+    //UNI
+    // #	Name	Type	Data
+    // 0	tokenAddress	address	bf5140a22578168fd562dccf235e5d43a02ce9b1
+    // 1	tradecontract	address	014608e87af97a054c9a49f81e1473076d51d9a3
+    // 2	rate	        uint256	100
+    // 3	pctmin	        uint256	50
+    // 4	pctmax	        uint256	80
     function addTradingPool(
         address tokenAddress,
         address tradecontract,
@@ -748,7 +866,7 @@ contract FreMiner is ReentrancyGuard {
         return true;
     }
 
-    // 赎回质押本金 (pct=1000000)
+    // 赎回质押本金
     function TakeBack(address tokenAddress, uint256 pct)
         public
         nonReentrant
@@ -854,7 +972,7 @@ contract FreMiner is ReentrancyGuard {
         return costabc;
     }
 
-    // 质押 （dppct=100）
+    // 质押 （dppct为所需代币百分比）
     function deposit(
         address tokenAddress,
         uint256 amount,
