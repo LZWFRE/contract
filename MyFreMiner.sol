@@ -989,6 +989,7 @@ contract FreMiner is ReentrancyGuard {
         return hashb;
     }
 
+    // 质押其他币种时所需要的liz
     function getLpPayfre(
         address tokenAddress,
         uint256 amount,
