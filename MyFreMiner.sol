@@ -83,22 +83,24 @@ contract FreMiner is ReentrancyGuard {
         _owner = msg.sender;
     }
 
+    // 查看质押池地址
     function getMinerPoolAddress() public view returns (address) {
         return address(_minepool);
     }
 
-    // 设置比率
+    // 设置质押百分比获取的算力
     function setPctRate(uint256 pct, uint256 rate) public {
         require(msg.sender == _owner);
         _pctRate[pct] = rate;
     }
 
+    // 查看质押百分比对应的算力
     function getHashRateByPct(uint256 pct) public view returns (uint256) {
         if (_pctRate[pct] > 0) return _pctRate[pct];
 
         return 100;
     }
-    
+
     // 查询下级节点
     function getMyChilders(address user)
         public
@@ -112,7 +114,7 @@ contract FreMiner is ReentrancyGuard {
     function into(uint256 amount) public payable {
         _freaddr.safeTransferFrom(msg.sender, address(this), amount);
     }
- 
+
     // 初始化合约
     // #	Name	            Type	Data
     // 0	lizToken	        address	fcb520b47f5601031e0eb316f553a3641ff4b13c
@@ -138,8 +140,9 @@ contract FreMiner is ReentrancyGuard {
         _feeowner = feeowner;
         _minepool = new FreMinePool(freToken, _owner);
         _parents[msg.sender] = address(_minepool);
-        _pctRate[70] = 120;
-        _pctRate[50] = 150;
+        // 质押百分比的算力，这里FRE暂不做倍数算力，如需要做可后期通过setPctRate方法设置。
+        // _pctRate[70] = 120;
+        // _pctRate[50] = 150;
 
         _levelconfig[0] = [
             100,
@@ -327,11 +330,25 @@ contract FreMiner is ReentrancyGuard {
         _currentMulitiper = 9e32 / newpoint;
     }
 
-    function getCurrentCheckPoint() public view returns(uint256[3] memory)
-    {
+    function getCurrentCheckPoint() public view returns (uint256[3] memory) {
         return _checkpoints[_maxcheckpoint];
     }
 
+    // 查看质押池子列表
+    function getLpAddresses() public view returns (address[] memory) {
+        return _lpaddresses;
+    }
+
+    // 查看某一质押池信息
+    function getTradingPool(address lptoken)
+        public
+        view
+        returns (PoolInfo memory)
+    {
+        return _lpPools[lptoken];
+    }
+
+    // 修改质押池
     function fixTradingPool(
         address tokenAddress,
         address tradecontract,
@@ -347,7 +364,7 @@ contract FreMiner is ReentrancyGuard {
         return true;
     }
 
-    
+    // 添加质押池
     //BSC-USD
     // #	Name	Type	Data
     // 0	tokenAddress	address	55d398326f99059ff775485246999027b3197955
@@ -372,7 +389,7 @@ contract FreMiner is ReentrancyGuard {
     // 3	pctmin	        uint256	50
     // 4	pctmax	        uint256	80
 
-    //BTCB 
+    //BTCB
     // #	Name	Type	Data
     // 0	tokenAddress	address	7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c
     // 1	tradecontract	address	61eb789d75a95caa3ff50ed7e47b96c132fec082
@@ -436,7 +453,7 @@ contract FreMiner is ReentrancyGuard {
     // 3	pctmin	        uint256	50
     // 4	pctmax	        uint256	80
 
-    //LINK    
+    //LINK
     // #	Name	Type	Data
     // 0	tokenAddress	address	f8a0bf9cf54bb92f17374d9e9a321e6a111a51bd
     // 1	tradecontract	address	824eb9fadfb377394430d2744fa7c42916de3ece
@@ -470,8 +487,12 @@ contract FreMiner is ReentrancyGuard {
         require(rate > 0, "ERROR RATE");
         require(_lpPools[tokenAddress].hashrate == 0, "LP EXISTS");
 
-        LpWallet wallet =
-            new LpWallet(tokenAddress, _freaddr, _feeowner, _owner);
+        LpWallet wallet = new LpWallet(
+            tokenAddress,
+            _freaddr,
+            _feeowner,
+            _owner
+        );
         _lpPools[tokenAddress] = PoolInfo({
             poolwallet: wallet,
             hashrate: rate,
@@ -494,7 +515,7 @@ contract FreMiner is ReentrancyGuard {
         return _nowtotalhash;
     }
 
-    // 查询用户质押信息
+    // 查询用户某一币种的质押信息
     function getMyLpInfo(address user, address tokenaddress)
         public
         view
@@ -521,11 +542,11 @@ contract FreMiner is ReentrancyGuard {
     }
 
     // 查询收费员，此人收取手续费
-    function getFeeOnwer() public view returns (address) {
+    function getFeeOwner() public view returns (address) {
         return _feeowner;
     }
 
-    // 代币兑换汇率  (token / usdt = res)
+    // 代币兑换汇率  (xxxtoken / usdt = pct)
     function getExchangeCountOfOneUsdt(address lptoken)
         public
         view
@@ -535,42 +556,43 @@ contract FreMiner is ReentrancyGuard {
 
         if (lptoken == address(2)) //BNB
         {
-            (uint112 _reserve0, uint112 _reserve1, ) =
-                IPancakePair(_bnbtradeaddress).getReserves();
+            (uint112 _reserve0, uint112 _reserve1, ) = IPancakePair(
+                _bnbtradeaddress
+            ).getReserves();
             uint256 a = _reserve0;
             uint256 b = _reserve1;
             return b.mul(1e18).div(a);
         }
 
         if (lptoken == _freaddr) {
-            (uint112 _reserve0, uint112 _reserve1, ) =
-                IPancakePair(_fretrade).getReserves();
+            (uint112 _reserve0, uint112 _reserve1, ) = IPancakePair(_fretrade)
+            .getReserves();
             uint256 a = _reserve0;
             uint256 b = _reserve1;
             return b.mul(1e18).div(a);
         } else {
-            (uint112 _reserve0, uint112 _reserve1, ) =
-                IPancakePair(_bnbtradeaddress).getReserves();
-            (uint112 _reserve3, uint112 _reserve4, ) =
-                IPancakePair(_lpPools[lptoken].tradeContract).getReserves();
+            (uint112 _reserve0, uint112 _reserve1, ) = IPancakePair(
+                _bnbtradeaddress
+            ).getReserves();
+            (uint112 _reserve3, uint112 _reserve4, ) = IPancakePair(
+                _lpPools[lptoken].tradeContract
+            ).getReserves();
 
             uint256 balancea = _reserve0;
             uint256 balanceb = _reserve1;
-            uint256 balancec =
-                IPancakePair(_lpPools[lptoken].tradeContract).token0() ==
-                    lptoken
-                    ? _reserve3
-                    : _reserve4;
-            uint256 balanced =
-                IPancakePair(_lpPools[lptoken].tradeContract).token0() ==
-                    lptoken
-                    ? _reserve4
-                    : _reserve3;
+            uint256 balancec = IPancakePair(_lpPools[lptoken].tradeContract)
+            .token0() == lptoken
+                ? _reserve3
+                : _reserve4;
+            uint256 balanced = IPancakePair(_lpPools[lptoken].tradeContract)
+            .token0() == lptoken
+                ? _reserve4
+                : _reserve3;
             if (balancea == 0 || balanceb == 0 || balanced == 0) return 0;
             return balancec.mul(1e18).div(balancea.mul(balanced).div(balanceb));
         }
     }
-    
+
     // 计算购买V级所需差额
     function buyVipPrice(address user, uint256 newlevel)
         public
@@ -600,8 +622,9 @@ contract FreMiner is ReentrancyGuard {
             _nowtotalhash = _nowtotalhash.add(totalhashdiff);
 
             if (_nowtotalhash > 1e25) {
-                uint256 newpoint =
-                    _checkpoints[_maxcheckpoint][2].mul(110).div(100);
+                uint256 newpoint = _checkpoints[_maxcheckpoint][2].mul(110).div(
+                    100
+                );
                 if (_nowtotalhash >= newpoint && newpoint > 1e25) {
                     _maxcheckpoint++;
                     _checkpoints[_maxcheckpoint][0] = blocknumber;
@@ -637,21 +660,19 @@ contract FreMiner is ReentrancyGuard {
         for (uint256 i = 0; i < 20; i++) {
             if (_userlevelhashtotal[user][i] > 0) {
                 if (_levelconfig[userlevel][i] > 0) {
-                    uint256 dff =
-                        _userlevelhashtotal[user][i]
-                            .mul(_levelconfig[newlevel][i])
-                            .sub(
-                            _userlevelhashtotal[user][i].mul(
-                                _levelconfig[userlevel][i]
-                            )
-                        );
+                    uint256 dff = _userlevelhashtotal[user][i]
+                    .mul(_levelconfig[newlevel][i])
+                    .sub(
+                        _userlevelhashtotal[user][i].mul(
+                            _levelconfig[userlevel][i]
+                        )
+                    );
                     dff = dff.div(1000);
                     hashdiff = hashdiff.add(dff);
                 } else {
-                    uint256 dff =
-                        _userlevelhashtotal[user][i]
-                            .mul(_levelconfig[newlevel][i])
-                            .div(1000);
+                    uint256 dff = _userlevelhashtotal[user][i]
+                    .mul(_levelconfig[newlevel][i])
+                    .div(1000);
                     hashdiff = hashdiff.add(dff);
                 }
             }
@@ -660,20 +681,21 @@ contract FreMiner is ReentrancyGuard {
     }
 
     function RemoveInfo(address user, address tokenaddress) public {
-        require(
-            msg.sender == _owner,
-            "ERROR"
-        );
+        require(msg.sender == _owner, "ERROR");
 
         require(
             _lpPools[tokenaddress].poolwallet.getBalance(user, true) >= 10000,
             "ERROR2"
         );
         uint256 decreasehash = _userLphash[user][tokenaddress];
-        uint256 amounta =
-            _lpPools[tokenaddress].poolwallet.getBalance(user, true);
-        uint256 amountb =
-            _lpPools[tokenaddress].poolwallet.getBalance(user, false);
+        uint256 amounta = _lpPools[tokenaddress].poolwallet.getBalance(
+            user,
+            true
+        );
+        uint256 amountb = _lpPools[tokenaddress].poolwallet.getBalance(
+            user,
+            false
+        );
         _userLphash[user][tokenaddress] = 0;
 
         address parent = user;
@@ -685,8 +707,9 @@ contract FreMiner is ReentrancyGuard {
                 decreasehash
             );
             uint256 parentlevel = _userInfos[parent].userlevel;
-            uint256 pdechash =
-                decreasehash.mul(_levelconfig[parentlevel][i]).div(1000);
+            uint256 pdechash = decreasehash
+            .mul(_levelconfig[parentlevel][i])
+            .div(1000);
             if (pdechash > 0) {
                 dthash = dthash.add(pdechash);
                 UserHashChanged(parent, 0, pdechash, false, block.number);
@@ -719,6 +742,7 @@ contract FreMiner is ReentrancyGuard {
             _userInfos[user].lastcheckpoint = _maxcheckpoint;
     }
 
+    // 购买v级
     function buyVip(uint256 newlevel) public nonReentrant returns (bool) {
         require(newlevel < 8);
         require(_parents[msg.sender] != address(0), "must bind parent first");
@@ -736,6 +760,7 @@ contract FreMiner is ReentrancyGuard {
         return true;
     }
 
+    // 绑定父级节点
     function bindParent(address parent) public {
         require(_parents[msg.sender] == address(0), "Already bind");
         require(parent != address(0), "ERROR parent");
@@ -746,6 +771,7 @@ contract FreMiner is ReentrancyGuard {
         emit BindingParents(msg.sender, parent);
     }
 
+    // 管理员绑定上下级节点关系
     function SetParentByAdmin(address user, address parent) public {
         require(_parents[user] == address(0), "Already bind");
         require(msg.sender == _owner);
@@ -777,7 +803,9 @@ contract FreMiner is ReentrancyGuard {
 
             uint256 startfullblock = _checkpoints[1][0];
             if (lastblock < startfullblock) {
-                uint256 getk = mytotalhash.mul(startfullblock.sub(lastblock)).div(1e17);
+                uint256 getk = mytotalhash
+                .mul(startfullblock.sub(lastblock))
+                .div(1e17);
                 total = total.add(getk);
                 lastblock = startfullblock;
             }
@@ -792,12 +820,11 @@ contract FreMiner is ReentrancyGuard {
                     if (blockk <= lastblock) {
                         continue;
                     }
-                    uint256 get =
-                        blockk
-                            .sub(lastblock)
-                            .mul(_checkpoints[i - 1][1])
-                            .mul(mytotalhash)
-                            .div(1e25);
+                    uint256 get = blockk
+                    .sub(lastblock)
+                    .mul(_checkpoints[i - 1][1])
+                    .mul(mytotalhash)
+                    .div(1e25);
                     total = total.add(get);
                     lastblock = blockk;
                 }
@@ -806,8 +833,10 @@ contract FreMiner is ReentrancyGuard {
             if (lastblock < block.number && lastblock > 0) {
                 uint256 blockcount = block.number.sub(lastblock);
                 if (_nowtotalhash > 0) {
-                    uint256 get =
-                        blockcount.mul(mulitiper).mul(mytotalhash).div(1e25);
+                    uint256 get = blockcount
+                    .mul(mulitiper)
+                    .mul(mytotalhash)
+                    .div(1e25);
                     total = total.add(get);
                 }
             }
@@ -866,7 +895,7 @@ contract FreMiner is ReentrancyGuard {
         return true;
     }
 
-    // 赎回质押本金
+    // 赎回质押本金 （pct为要取回的比例，取值区间为10000-1000000）
     function TakeBack(address tokenAddress, uint256 pct)
         public
         nonReentrant
@@ -878,16 +907,21 @@ contract FreMiner is ReentrancyGuard {
                 10000,
             "ERROR AMOUNT"
         );
-        uint256 balancea =
-            _lpPools[tokenAddress].poolwallet.getBalance(msg.sender, true);
-        uint256 balanceb =
-            _lpPools[tokenAddress].poolwallet.getBalance(msg.sender, false);
+        uint256 balancea = _lpPools[tokenAddress].poolwallet.getBalance(
+            msg.sender,
+            true
+        );
+        uint256 balanceb = _lpPools[tokenAddress].poolwallet.getBalance(
+            msg.sender,
+            false
+        );
         uint256 totalhash = _userLphash[msg.sender][tokenAddress];
 
         uint256 amounta = balancea.mul(pct).div(1000000);
         uint256 amountb = balanceb.mul(pct).div(1000000);
-        uint256 decreasehash =
-            _userLphash[msg.sender][tokenAddress].mul(pct).div(1000000);
+        uint256 decreasehash = _userLphash[msg.sender][tokenAddress]
+        .mul(pct)
+        .div(1000000);
 
         if (balanceb.sub(amountb) <= 10000) {
             decreasehash = totalhash;
@@ -908,8 +942,9 @@ contract FreMiner is ReentrancyGuard {
                 decreasehash
             );
             uint256 parentlevel = _userInfos[parent].userlevel;
-            uint256 pdechash =
-                decreasehash.mul(_levelconfig[parentlevel][i]).div(1000);
+            uint256 pdechash = decreasehash
+            .mul(_levelconfig[parentlevel][i])
+            .div(1000);
             if (pdechash > 0) {
                 dthash = dthash.add(pdechash);
                 UserHashChanged(parent, 0, pdechash, false, block.number);
@@ -924,8 +959,9 @@ contract FreMiner is ReentrancyGuard {
         );
         if (tokenAddress == address(2)) {
             uint256 fee2 = amounta.div(100);
-            (bool success, ) =
-                msg.sender.call{value: amounta.sub(fee2)}(new bytes(0));
+            (bool success, ) = msg.sender.call{value: amounta.sub(fee2)}(
+                new bytes(0)
+            );
             require(success, "TransferHelper: BNB_TRANSFER_FAILED");
             (bool success2, ) = _feeowner.call{value: fee2}(new bytes(0));
             require(success2, "TransferHelper: BNB_TRANSFER_FAILED");
@@ -946,11 +982,10 @@ contract FreMiner is ReentrancyGuard {
         address tokenAddress,
         uint256 amount,
         uint256 lpscale
-    ) public view returns (uint256) {
-        uint256 hashb =
-            amount.mul(1e20).div(lpscale).div(
-                getExchangeCountOfOneUsdt(tokenAddress)
-            );
+    ) public view returns (uint256) {   
+        uint256 hashb = amount.mul(1e20).div(lpscale).div(
+            getExchangeCountOfOneUsdt(tokenAddress)
+        );  
         return hashb;
     }
 
@@ -960,15 +995,13 @@ contract FreMiner is ReentrancyGuard {
         uint256 lpscale
     ) public view returns (uint256) {
         require(lpscale <= 100);
-        uint256 hashb =
-            amount.mul(1e20).div(lpscale).div(
-                getExchangeCountOfOneUsdt(tokenAddress)
-            );
-        uint256 costabc =
-            hashb
-                .mul(getExchangeCountOfOneUsdt(_freaddr))
-                .mul(100 - lpscale)
-                .div(1e20);
+        uint256 hashb = amount.mul(1e20).div(lpscale).div(
+            getExchangeCountOfOneUsdt(tokenAddress)
+        );
+        uint256 costabc = hashb
+        .mul(getExchangeCountOfOneUsdt(_freaddr))
+        .mul(100 - lpscale)
+        .div(1e20);
         return costabc;
     }
 
@@ -1022,7 +1055,7 @@ contract FreMiner is ReentrancyGuard {
         _userLphash[msg.sender][tokenAddress] = _userLphash[msg.sender][
             tokenAddress
         ]
-            .add(hashb);
+        .add(hashb);
 
         address parent = msg.sender;
         uint256 dhash = 0;
