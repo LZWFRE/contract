@@ -65,7 +65,7 @@ contract FreMiner is ReentrancyGuard {
         uint256 teamhash;
         uint256 userlevel; // my userlevel
         uint256 pendingreward;
-        uint256 lastblock;
+        uint256 lastblock;//最后交易的区块高度
         uint256 lastcheckpoint;
     }
 
@@ -800,8 +800,8 @@ contract FreMiner is ReentrancyGuard {
         if (_maxcheckpoint > 0) {
             uint256 mulitiper = _currentMulitiper;
             if (mulitiper > 1e8) mulitiper = 1e8;
-
-            uint256 startfullblock = _checkpoints[1][0];
+            
+            uint256 startfullblock = _checkpoints[1][0];//合约起始区块
             if (lastblock < startfullblock) {
                 uint256 getk = mytotalhash
                 .mul(startfullblock.sub(lastblock))
@@ -810,8 +810,10 @@ contract FreMiner is ReentrancyGuard {
                 lastblock = startfullblock;
             }
 
+            //计算user与实际checkpoints差值
             if (info.lastcheckpoint > 0) {
                 for (
+                    // i=2 _maxcheckpoint=1
                     uint256 i = info.lastcheckpoint + 1;
                     i <= _maxcheckpoint;
                     i++
@@ -831,7 +833,8 @@ contract FreMiner is ReentrancyGuard {
             }
 
             if (lastblock < block.number && lastblock > 0) {
-                uint256 blockcount = block.number.sub(lastblock);
+                uint256 blockcount = block.number.sub(lastblock);//区块高度差
+                // blockcount*67618332*10149010402790/100000000000000000000
                 if (_nowtotalhash > 0) {
                     uint256 get = blockcount
                     .mul(mulitiper)
