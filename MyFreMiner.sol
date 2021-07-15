@@ -65,7 +65,7 @@ contract FreMiner is ReentrancyGuard {
         uint256 teamhash;
         uint256 userlevel; // my userlevel
         uint256 pendingreward;
-        uint256 lastblock;//最后交易的区块高度
+        uint256 lastblock;
         uint256 lastcheckpoint;
     }
 
@@ -115,12 +115,27 @@ contract FreMiner is ReentrancyGuard {
         _freaddr.safeTransferFrom(msg.sender, address(this), amount);
     }
 
+    function changeFreToken(address fretoken) public {
+        require(msg.sender == _owner);
+        _freaddr = fretoken;
+    }
+
+    function changeFreTrade(address fretrade) public {
+        require(msg.sender == _owner);
+        _fretrade = fretrade;
+    }
+
+    function changeFreOwner(address freowner) public {
+        require(msg.sender == _owner);
+        _feeowner = freowner;
+    }
+
     // 初始化合约
     // #	Name	            Type	Data
     // 0	lizToken	        address	fcb520b47f5601031e0eb316f553a3641ff4b13c
     // 1	liztrade	        address	52c400e56c15de371fe9fd610b2d9235ac8489c9
     // 2	wrappedbnbaddress	address	bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c
-    // 3	bnbtradeaddress	    address	16b9a82891338f9ba80e2d6970fdda79d1eb0dae
+    // 3	bnbtradeaddress	    address	16b9a82891338f9ba80e2d6970fdda79d1eb0dae  (对应薄饼USDT-BNB)
     // 4	usdtaddress	        address	55d398326f99059ff775485246999027b3197955
     function InitalContract(
         address freToken,
@@ -800,8 +815,8 @@ contract FreMiner is ReentrancyGuard {
         if (_maxcheckpoint > 0) {
             uint256 mulitiper = _currentMulitiper;
             if (mulitiper > 1e8) mulitiper = 1e8;
-            
-            uint256 startfullblock = _checkpoints[1][0];//合约起始区块
+
+            uint256 startfullblock = _checkpoints[1][0];
             if (lastblock < startfullblock) {
                 uint256 getk = mytotalhash
                 .mul(startfullblock.sub(lastblock))
@@ -810,10 +825,8 @@ contract FreMiner is ReentrancyGuard {
                 lastblock = startfullblock;
             }
 
-            //计算user与实际checkpoints差值
             if (info.lastcheckpoint > 0) {
                 for (
-                    // i=2 _maxcheckpoint=1
                     uint256 i = info.lastcheckpoint + 1;
                     i <= _maxcheckpoint;
                     i++
@@ -833,8 +846,7 @@ contract FreMiner is ReentrancyGuard {
             }
 
             if (lastblock < block.number && lastblock > 0) {
-                uint256 blockcount = block.number.sub(lastblock);//区块高度差
-                // blockcount*67618332*10149010402790/100000000000000000000
+                uint256 blockcount = block.number.sub(lastblock);
                 if (_nowtotalhash > 0) {
                     uint256 get = blockcount
                     .mul(mulitiper)
