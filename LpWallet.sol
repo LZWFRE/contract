@@ -11,6 +11,8 @@ contract LpWallet //EMPTY CONTRACT TO HOLD THE USERS assetS
     address _MainContract;
     address _feeowner;
     address _owner;
+    uint256 tvlBalancea;
+    uint256 tvlBalanceb;
 
     mapping(address=>uint256) _balancesa;
     mapping(address=>uint256) _balancesb;
@@ -35,6 +37,21 @@ contract LpWallet //EMPTY CONTRACT TO HOLD THE USERS assetS
             return _balancesa[user];
        else
            return _balancesb[user];
+    }
+
+    function gettvlBalance(bool isa) public view returns(uint256)
+    {
+        if(isa)
+            return tvlBalancea;
+       else
+           return tvlBalanceb;
+    }
+
+    function addtvlBalance(uint256 amounta,uint256 amountb) public
+    {
+        require(_MainContract==msg.sender);//Only fremain can do this
+        tvlBalancea = tvlBalancea.add(amounta);
+        tvlBalanceb = tvlBalanceb.add(amountb);
     }
  
     function addBalance(address user,uint256 amounta,uint256 amountb) public

@@ -115,27 +115,12 @@ contract FreMiner is ReentrancyGuard {
         _freaddr.safeTransferFrom(msg.sender, address(this), amount);
     }
 
-    function changeFreToken(address fretoken) public {
-        require(msg.sender == _owner);
-        _freaddr = fretoken;
-    }
-
-    function changeFreTrade(address fretrade) public {
-        require(msg.sender == _owner);
-        _fretrade = fretrade;
-    }
-
-    function changeFreOwner(address freowner) public {
-        require(msg.sender == _owner);
-        _feeowner = freowner;
-    }
-
     // 初始化合约
     // #	Name	            Type	Data
     // 0	lizToken	        address	fcb520b47f5601031e0eb316f553a3641ff4b13c
     // 1	liztrade	        address	52c400e56c15de371fe9fd610b2d9235ac8489c9
     // 2	wrappedbnbaddress	address	bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c
-    // 3	bnbtradeaddress	    address	16b9a82891338f9ba80e2d6970fdda79d1eb0dae  (对应薄饼USDT-BNB)
+    // 3	bnbtradeaddress	    address	16b9a82891338f9ba80e2d6970fdda79d1eb0dae
     // 4	usdtaddress	        address	55d398326f99059ff775485246999027b3197955
     function InitalContract(
         address freToken,
@@ -378,6 +363,11 @@ contract FreMiner is ReentrancyGuard {
         _lpPools[tokenAddress].maxpct = pctmax;
         return true;
     }
+
+    /*
+    myUsdt = 
+
+    */
 
     // 添加质押池
     //BSC-USD

